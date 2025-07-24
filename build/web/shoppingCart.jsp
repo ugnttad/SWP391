@@ -295,377 +295,379 @@
                     <!-- Start Content-->
                     <div class="container-fluid">
                         <h3 style="text-align: center; color: red;">Giỏ hàng của bạn</h3> <br>
-                        <div class="row">
-                            <div class="col-12">
+                        <div class="row align-items-start">
+                            <!-- Giỏ hàng bên trái -->
+                            <div class="col-md-8 mb-4">
                                 <div class="card">
                                     <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-8">
-                                                <div class="table-responsive">
-
-                                                    <form action="shopping?action=changeQuantity" method="POST">
-                                                        <table class="table table-borderless table-nowrap table-centered mb-0">
-                                                            <thead class="table-light">
-                                                                <tr>
-                                                                    <th>Sản phẩm</th>
-                                                                    <th>Giá</th>
-                                                                    <th>Số lượng</th>
-                                                                    <th>Thành tiền</th>
+                                        <div class="table-responsive">
+                                            <table class="table table-borderless table-nowrap table-centered mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>
+                                                            <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">
+                                                        </th>
+                                                        <th>Sản phẩm</th>
+                                                        <th>Giá</th>
+                                                        <th>Số lượng</th>
+                                                        <th>Thành tiền</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <c:choose>
+                                                        <c:when test="${not empty allProductShopping}">
+                                                            <c:forEach var="cartItem" items="${allProductShopping}" varStatus="status">
+                                                                <tr class="product">
+                                                                    <td>
+                                                                        <input type="checkbox" class="checkProduct"
+                                                                               data-productid="${cartItem.productID}"
+                                                                               data-color="${cartItem.color}"
+                                                                               data-quantity="${cartItem.quantity}"
+                                                                               data-price="${cartItem.price}"
+                                                                               onchange="updateTotal()"/>
+                                                                    </td>
+                                                                    <td>
+                                                                        <img src="${cartItem.thumbnail}" alt="product-img" class="rounded me-3" height="64" />
+                                                                        <div style="display:inline-block">
+                                                                            <b>${cartItem.productName}</b><br>
+                                                                            <small>Bộ nhớ: ${cartItem.storage} - Màu: ${cartItem.color}</small>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>${cartItem.disString}</td>
+                                                                    <td>${cartItem.quantity}</td>
+                                                                    <td>${cartItem.price * cartItem.quantity}</td>
                                                                 </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <c:choose>
-                                                                    <c:when test="${not empty allProductShopping}">
-                                                                    <input hidden type="text" name="orderID" value="${allProductShopping[0].orderID}">
-                                                                    <input type="hidden" name="totalItems" value="${allProductShopping.size()}">
-                                                                    <c:forEach var="cartItem" items="${allProductShopping}" varStatus="status">
-                                                                        <tr class="product">
-                                                                            <td>
-                                                                                <img src="${cartItem.thumbnail}" alt="product-img" title="product-img" class="rounded me-3" height="64" />
-                                                                                <p class="m-0 d-inline-block align-middle font-16">
-                                                                                    <a href="product-details.jsp" class="text-body">${cartItem.productName}</a>
-                                                                                    <br>
-                                                                                    <small class="me-2"><b>Bộ nhớ:</b> ${cartItem.storage}</small>
-                                                                                    <small><b>Màu:</b> ${cartItem.color}</small>
-                                                                                </p>
-                                                                            </td>
-                                                                            <td>
-                                                                                <span class="gia">${cartItem.disString}</span>
-                                                                            </td>
-
-                                                                            <td class="row">
-                                                                                <input name="quantity_${status.index}" onchange="displayOk(event)" type="number" class="soLuong form-control col-6" min="0" value="${cartItem.quantity}" placeholder="Qty" style="width: 60px; padding-right: 0px;">
-                                                                                <input type="text" hidden name="color_${status.index}" value="${cartItem.color}">
-                                                                                <input type="submit" class="col-5 ok" style="display: none; background: none; border: none; padding: 0; cursor: pointer; outline: none; color: blue;" value="OK"> <%--update giỏ hàng khi số lượng tăng hoặc giảm--%>
-                                                                            </td>
-
-                                                                            <td>
-                                                                                <span class="thanhTien">${cartItem.price * cartItem.quantity}</span>
+                                                            </c:forEach>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <tr><td colspan="5" class="text-center">Không có sản phẩm nào trong giỏ hàng.</td></tr>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="row mt-4">
+                                            <div class="col-sm-6">
+                                                <a href="homePage"
+                                                   class="btn text-muted d-none text-decoration-none d-sm-inline-block btn-link fw-semibold">
+                                                    <i class="fas fa-arrow-left"></i> Tiếp tục mua hàng </a>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="text-sm-end">
+                                                    <c:choose>
+                                                        <c:when test="${empty allProductShopping}">
+                                                            <button id="thanhToanBtn" type="button" class="btn btn-danger" style="display: none;">
+                                                                <i class="fas fa-cart-plus"></i>
+                                                                Thanh toán
+                                                            </button>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <button id="thanhToanBtn" type="button" class="btn btn-danger"
+                                                                    data-bs-toggle="modal" data-bs-target="#myModal" disabled>
+                                                                <i class="fas fa-cart-plus"></i>
+                                                                Thanh toán
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                                <!-- Modal xác nhận đơn hàng -->
+                                                <div class="modal fade" id="myModal">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h4 class="modal-title" style="color: red;">
+                                                                    <i class="fas fa-map-marker-alt"></i>
+                                                                    Xác nhận thông tin đơn hàng
+                                                                </h4>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body align-items-center">
+                                                                <form id="orderForm" action="shopping?action=orderSubmit" method="POST">
+                                                                    <input hidden type="text" name="orderID" value="${not empty allProductShopping ? allProductShopping[0].orderID : ''}">
+                                                                    <div id="selectedProductsContainer"></div>
+                                                                    <table>
+                                                                        <tr>
+                                                                            <td class="fw-bold">Tên người nhận</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="pb-2 user_info"><input
+                                                                                    type="text" name="nameOrder"
+                                                                                    placeholder="Tên Người Nhận"
+                                                                                    value="${account.fullName}"
+                                                                                    required></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="fw-bold">Số điện thoại</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="pb-2 user_info"><input
+                                                                                    type="tel"
+                                                                                    name="phone"
+                                                                                    placeholder="Số Điện Thoại"
+                                                                                    value="${account.phone}"
+                                                                                    required></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="fw-bold">Phương thức thanh toán</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="fw-bold">Phương thức thanh toán</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="pb-2 user-info">
+                                                                                <label>
+                                                                                    <input type="radio" name="paymentMethod" value="COD" checked>
+                                                                                    Thanh toán khi nhận hàng (COD)
+                                                                                </label><br>
+                                                                                <label>
+                                                                                    <input type="radio" name="paymentMethod" value="PAYOS">
+                                                                                    Thanh toán qua PayOS
+                                                                                </label>
                                                                             </td>
                                                                         </tr>
-                                                                        <input hidden type="number" name="productID_${status.index}" value="${cartItem.productID}">
-                                                                    </c:forEach>
-
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <p>Không có sản phẩm nào trong giỏ hàng.</p>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                            </tbody>
-                                                        </table>
-                                                    </form>
-                                                </div> <!-- end table-responsive-->
-                                                <!-- action buttons-->
-                                                <div class="row mt-4">
-                                                    <div class="col-sm-6">
-                                                        <a href="homePage"
-                                                           class="btn text-muted d-none text-decoration-none d-sm-inline-block btn-link fw-semibold">
-                                                            <i class="fas fa-arrow-left"></i> Tiếp tục mua hàng </a>
-                                                    </div> <!-- end col -->
-                                                    <div class="col-sm-6">
-                                                        <div class="text-sm-end">
-                                                            <c:choose>
-                                                                <c:when test="${empty allProductShopping}">
-                                                                    <!-- Nếu allProductShopping rỗng hoặc null, ẩn nút -->
-                                                                    <button id="thanhToanBtn" type="button" class="btn btn-danger" style="display: none;">
-                                                                        <i class="fas fa-cart-plus"></i>
-                                                                        Thanh toán
-                                                                    </button>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <!-- Nếu allProductShopping không rỗng, hiển thị nút -->
-                                                                    <button id="thanhToanBtn" type="button" class="btn btn-danger"
-                                                                            data-bs-toggle="modal" data-bs-target="#myModal">
-                                                                        <i class="fas fa-cart-plus"></i>
-                                                                        Thanh toán
-                                                                    </button>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </div>
-                                                        <div class="modal fade" id="myModal">
-                                                            <div class="modal-dialog">
-                                                                <div class="modal-content">
-                                                                    <!-- Modal Header -->
-                                                                    <div class="modal-header">
-                                                                        <h4 class="modal-title" style="color: red;">
-                                                                            <div class="dat_hang"></div>
-                                                                            <i class="fas fa-map-marker-alt"></i>
-                                                                            Xác nhận thông tin đơn hàng
-                                                                        </h4>
-                                                                        <button type="button" class="btn-close"
-                                                                                data-bs-dismiss="modal"></button>
-                                                                    </div>
-                                                                    <!-- Modal body -->
-                                                                    <div class="row ms-4 ps-5">
-                                                                        <div class="modal-body align-items-center">
-                                                                            <form action="shopping" method="post">
-                                                                                <input type="hidden" name="action" value="orderSubmit" />
-                                                                                <input hidden type="text" name="orderID" value="${allProductShopping[0].orderID}">
-                                                                                <table>
-                                                                                    <tr>
-                                                                                        <td class="fw-bold">Tên người nhận</td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="pb-2 user_info"><input
-                                                                                                type="text" name="nameOrder"
-                                                                                                placeholder="Tên Người Nhận"
-                                                                                                value="${account.fullName}"
-                                                                                                required></td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="fw-bold">Số điện thoại</td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="pb-2 user_info"><input
-                                                                                                type="tel"
-                                                                                                name="phone"
-                                                                                                placeholder="Số Điện Thoại"
-                                                                                                value="${account.phone}"
-                                                                                                required></td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="fw-bold">Phương thức thanh toán</td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="pb-2 user-info">
-                                                                                            <label>
-                                                                                                <input type="radio" name="paymentMethod" value="COD" checked>
-                                                                                                Thanh toán khi nhận hàng (COD)
-                                                                                            </label>
-                                                                                            <label>
-                                                                                                <input type="radio" name="paymentMethod" value="PAYOS">
-                                                                                                Thanh toán qua PayOS
-                                                                                            </label>
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="fw-bold"><label for="address">Địa chỉ nhận hàng</label></td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td class="pb-2 user_info">
-                                                                                            <textarea name="deliveryLocation" id="address" placeholder="Địa Chỉ Nhận Hàng" cols="40">${account.address}</textarea>
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                    <tr>
-                                                                                        <td>
-                                                                                            <button type="submit" class="btn btn-primary">Xác nhận</button>
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                </table>
-                                                                            </form>
-
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
+                                                                        <tr>
+                                                                            <td class="fw-bold"><label for="address">Địa chỉ nhận hàng</label></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="pb-2 user_info">
+                                                                                <textarea name="deliveryLocation" id="address" placeholder="Địa Chỉ Nhận Hàng" cols="40">${account.address}</textarea>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td><input class="submit-btn btn btn-primary"
+                                                                                       type="submit"
+                                                                                       value="Xác Nhận"></td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </form>
                                                             </div>
                                                         </div>
-                                                    </div> <!-- end col -->
-                                                </div> <!-- end row-->
-                                            </div>
-                                            <!-- end col -->
-
-                                            <div class="col-md-4">
-                                                <div class="border p-3 mt-4 mt-lg-0 rounded">
-                                                    <h5 class="header-title mb-3">Tóm tắt đơn hàng</h5>
-
-                                                    <div class="table-responsive">
-                                                        <table class="table mb-0">
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td>Tổng tiền hàng: </td>
-                                                                    <td><span id="tongTienHang">0đ</span></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>Giảm giá: </td>
-                                                                    <td>
-                                                                        <span id="giamGia">
-                                                                            <c:choose>
-                                                                                <c:when test="${empty allProductShopping}">
-                                                                                    0đ
-                                                                                </c:when>
-                                                                                <c:otherwise>
-                                                                                    50,000đ
-                                                                                </c:otherwise>
-                                                                            </c:choose>
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>Phí vận chuyển: </td>
-                                                                    <td>
-                                                                        <span id="phiVanChuyen">
-                                                                            <c:choose>
-                                                                                <c:when test="${empty allProductShopping}">
-                                                                                    0đ
-                                                                                </c:when>
-                                                                                <c:otherwise>
-                                                                                    50,000đ
-                                                                                </c:otherwise>
-                                                                            </c:choose>
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-
-                                                                <!--                                                                <tr>
-                                                                                                                                    <td>Thuế (10%): </td>
-                                                                                                                                    <td><span id="thue">0đ</span></td>
-                                                                                                                                </tr>-->
-                                                                <tr>
-                                                                    <th>Tổng cộng: </th>
-                                                                    <th><span id="tongCong" >0đ</span></th>   <!-- id="tongCong" -->
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
                                                     </div>
-                                                    <!-- end table-responsive -->
                                                 </div>
-                                                <div class="alert alert-warning mt-3" role="alert">
-                                                    <!--Sử dụng mã giảm giá <strong>HYPBM</strong> và nhận giảm giá 10% !-->
-                                                    Hiện tại đang có chương trình <strong>FreeShip</strong> cho toàn bộ sản phẩm
-                                                </div>
-
-                                                <div class="input-group mt-3">
-                                                    <input type="text" class="form-control" placeholder="Coupon code"
-                                                           aria-label="Recipient's username">
-                                                    <button class="input-group-text btn-light" type="button">Áp
-                                                        dụng</button>
-                                                </div>
-
-
-                                            </div> <!-- end col -->
-                                        </div> <!-- end row -->
-                                    </div> <!-- end card-body-->
-                                </div> <!-- end card-->
+                                                <!-- End Modal -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Tóm tắt đơn hàng bên phải -->
+                            <div class="col-md-4 mb-4">
+                                <div class="border p-3 mt-0 rounded" style="background:#fff;">
+                                    <h5 class="header-title mb-3">Tóm tắt đơn hàng</h5>
+                                    <div class="table-responsive">
+                                        <table class="table mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Tổng tiền hàng: </td>
+                                                    <td><span id="tongTienHang">0đ</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Giảm giá: </td>
+                                                    <td><span id="giamGia">0đ</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Phí vận chuyển: </td>
+                                                    <td><span id="phiVanChuyen">0đ</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Tổng cộng: </th>
+                                                    <th><span id="tongCong">0đ</span></th>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning mt-3" role="alert">
+                                    Hiện tại đang có chương trình <strong>FreeShip</strong> cho toàn bộ sản phẩm
+                                </div>
+                                <div class="input-group mt-3">
+                                    <input type="text" class="form-control" placeholder="Coupon code" aria-label="Recipient's username">
+                                    <button class="input-group-text btn-light" type="button">Áp dụng</button>
+                                </div>
                             </div>
                         </div>
-                        <!-- end row -->
-                    </div> <!-- container -->
-                </div> <!-- content -->
-
-            </div>
-            <button onclick="topFunction()" id="myBtn" title="Go to top">
-                <i class="fas fa-arrow-up"></i>
-            </button>
-            <div class="footer" id="footer">
-                <div class="container">
-                    <div class="footer-info row">
-                        <div class="col-md-4 footer-info-grid links">
-                            <h4>Thông tin và chính sách</h4>
-                            <ul>
-                                <li><a href="#">Giới thiệu về công ty</a></li>
-                                <li><a href="#">Chính sách bảo mật</a></li>
-                                <li><a href="#">Quy chế hoạt động</a></li>
-                                <li><a href="#">Kiểm tra hóa đơn điện tử</a></li>
-                                <li><a href="#">Câu hỏi thường gặp mua hàng</a></li>
-                            </ul>
-                            <img style="width: 15%; margin-top: 10px;" src="./img_svg/mainPage/ft-img1.png"
-                                 alt="">
-                            <img style="width: 40%; margin-top: 10px;" src="./img_svg/mainPage/ft-img2.png" alt="">
-                        </div>
-                        <div class="col-md-4 footer-info-grid address">
-                            <h4>Địa chỉ</h4>
-                            <address>
-                                <ul>
-                                    <li>Khu đô thị FPT City, Ngũ Hành Sơn, Đà Nẵng </li>
-                                    <li>Đà Nẵng, Việt Nam</li>
-                                    <li>Hotline: 1800 1918</li>
-                                    <li>Email : <a class="mail" href="#">hextechxinchao@gmail.com</a></li>
-                                </ul>
-                            </address>
-                        </div>
-                        <div class="col-md-4 mt-4 footer-info-grid email">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.856168121187!2d108.25831637544461!3d15.968885884696228!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142116949840599%3A0x365b35580f52e8d5!2zxJDhuqFpIGjhu41jIEZQVCDEkMOgIE7hurVuZw!5e0!3m2!1svi!2s!4v1720180268723!5m2!1svi!2s" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>                 
-                        </div>
-                        <div class="clearfix"></div>
                     </div>
-                    <div class="connect">
-                        <div class="connect-social">
-                            <h4>LIÊN HỆ VỚI CHÚNG TÔI</h4>
-                            <ul>
-                                <li><a href="#" class="social-button facebook"><i class="fa fa-facebook"></i></a></li>
-                                <li><a href="#" class="social-button twitter"><i class="fa fa-twitter"></i></a></li>
-                                <li><a href="#" class="social-button"><i class="fa fa-google"></i></a></li>
-                                <li><a href="#" class="social-button"><i class="fab fa-github"></i></a></li>
-                                <li><a href="#" class="social-button"><i class="fa fa-linkedin"></i></a></li>
-                                <li><a href="#" class="social-button"><i class="fa fa-pinterest-p"></i></a></li>
-                            </ul>
+
+
+                    <button onclick="topFunction()" id="myBtn" title="Go to top">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    <div class="footer" id="footer">
+                        <div class="container">
+                            <div class="footer-info row">
+                                <div class="col-md-4 footer-info-grid links">
+                                    <h4>Thông tin và chính sách</h4>
+                                    <ul>
+                                        <li><a href="#">Giới thiệu về công ty</a></li>
+                                        <li><a href="#">Chính sách bảo mật</a></li>
+                                        <li><a href="#">Quy chế hoạt động</a></li>
+                                        <li><a href="#">Kiểm tra hóa đơn điện tử</a></li>
+                                        <li><a href="#">Câu hỏi thường gặp mua hàng</a></li>
+                                    </ul>
+                                    <img style="width: 15%; margin-top: 10px;" src="./img_svg/mainPage/ft-img1.png"
+                                         alt="">
+                                    <img style="width: 40%; margin-top: 10px;" src="./img_svg/mainPage/ft-img2.png" alt="">
+                                </div>
+                                <div class="col-md-4 footer-info-grid address">
+                                    <h4>Địa chỉ</h4>
+                                    <address>
+                                        <ul>
+                                            <li>Khu đô thị FPT City, Ngũ Hành Sơn, Đà Nẵng </li>
+                                            <li>Đà Nẵng, Việt Nam</li>
+                                            <li>Hotline: 1800 1918</li>
+                                            <li>Email : <a class="mail" href="#">hextechxinchao@gmail.com</a></li>
+                                        </ul>
+                                    </address>
+                                </div>
+                                <div class="col-md-4 mt-4 footer-info-grid email">
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.856168121187!2d108.25831637544461!3d15.968885884696228!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142116949840599%3A0x365b35580f52e8d5!2zxJDhuqFpIGjhu41jIEZQVCDEkMOgIE7hurVuZw!5e0!3m2!1svi!2s!4v1720180268723!5m2!1svi!2s" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>                 
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="connect">
+                                <div class="connect-social">
+                                    <h4>LIÊN HỆ VỚI CHÚNG TÔI</h4>
+                                    <ul>
+                                        <li><a href="#" class="social-button facebook"><i class="fa fa-facebook"></i></a></li>
+                                        <li><a href="#" class="social-button twitter"><i class="fa fa-twitter"></i></a></li>
+                                        <li><a href="#" class="social-button"><i class="fa fa-google"></i></a></li>
+                                        <li><a href="#" class="social-button"><i class="fab fa-github"></i></a></li>
+                                        <li><a href="#" class="social-button"><i class="fa fa-linkedin"></i></a></li>
+                                        <li><a href="#" class="social-button"><i class="fa fa-pinterest-p"></i></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="copyright">
+                                <p>&copy; 2007 - 2023 Công Ty Cổ Phần Bán Lẻ Kỹ Thuật Số Hextech</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="copyright">
-                        <p>&copy; 2007 - 2023 Công Ty Cổ Phần Bán Lẻ Kỹ Thuật Số Hextech</p>
-                    </div>
-                </div>
-            </div>
-        </main>
+                    </main>
 
-        <%--<c:if test="${not empty requestScope.notifyOrder}">--%>
-            <!--<input type="hidden" id="notifyOrder" value="${requestScope.notifyOrder}" />-->
-        <%--<c:remove var="notifyOrder" scope="request" />--%>
-        <%--</c:if>--%>
+                    <%--<c:if test="${not empty requestScope.notifyOrder}">--%>
+                        <!--<input type="hidden" id="notifyOrder" value="${requestScope.notifyOrder}" />-->
+                    <%--<c:remove var="notifyOrder" scope="request" />--%>
+                    <%--</c:if>--%>
 
-        <script>
-            //Hiển thị thông cáo khi xác nhận Order
+                    <script>
+                        //Hiển thị thông cáo khi xác nhận Order
 
-            window.onload = function () {
-                const urlParams = new URLSearchParams(window.location.search);
-                const notifyOrder = urlParams.get('notifyOrder');
-                if (notifyOrder === "success") {
-                    alert("Thanh toán thành công!");
-                } else if (notifyOrder === "failed") {
-                    alert("Thanh toán thất bại!");
-                }
-            };
-
-
-            // Hiển thị dấu tích khi thay đổi số lượng
-            function displayOk(event) {
-                //Lấy nút thanh toán
-                let thanhToanBtn = document.querySelector("#thanhToanBtn");
-                // Lấy thẻ <td> cha của <input> được thay đổi
-                let td = event.target.closest('td.row');
-                // Tìm thẻ <a> bên trong thẻ <td> đó
-                let a = td.querySelector('.ok');
-                // Hiển thị thẻ <a>
-                if (a.style.display === 'none') {       //hiện nút ok thì ẩn nút thanh toán
-                    a.style.display = 'block';
-                    thanhToanBtn.style.display = 'none';
-                }
-            }
-        </script>
-        <script>
-            fetch('/shopping', {
-                method: 'POST',
-                body: formData
-            })
-                    .then(response => {
-                        if (!response.ok)
-                            throw new Error('Network response was not ok');
-                        return response.json(); // vì giờ response thật sự là JSON
-                    })
-                    .then(data => {
-                        if (data.code === "00") {
-                            if (data.data) {
-                                window.location.href = data.data; // Redirect to VNPAY
-                            } else {
-                                alert("Đặt hàng thành công!");
-                                window.location.href = '/home'; // Redirect to home
+                        window.onload = function () {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const notifyOrder = urlParams.get('notifyOrder');
+                            if (notifyOrder === "success") {
+                                alert("Thanh toán thành công!");
+                            } else if (notifyOrder === "failed") {
+                                alert("Thanh toán thất bại!");
                             }
-                        } else {
-                            alert("Lỗi: " + data.message);
+                        };
+
+
+                        // Hiển thị dấu tích khi thay đổi số lượng
+                        function displayOk(event) {
+                            //Lấy nút thanh toán
+                            let thanhToanBtn = document.querySelector("#thanhToanBtn");
+                            // Lấy thẻ <td> cha của <input> được thay đổi
+                            let td = event.target.closest('td.row');
+                            // Tìm thẻ <a> bên trong thẻ <td> đó
+                            let a = td.querySelector('.ok');
+                            // Hiển thị thẻ <a>
+                            if (a.style.display === 'none') {       //hiện nút ok thì ẩn nút thanh toán
+                                a.style.display = 'block';
+                                thanhToanBtn.style.display = 'none';
+                            }
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert("Có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại.");
-                    });
+                    </script>
+                    <script>
+                        function updateTotal() {
+                            let checkboxes = document.querySelectorAll('.checkProduct:checked');
+                            let total = 0;
+                            checkboxes.forEach(cb => {
+                                let price = Number(cb.getAttribute('data-price'));
+                                let quantity = Number(cb.getAttribute('data-quantity'));
+                                total += price * quantity;
+                            });
+
+                            let giamGia = (total > 0) ? 50000 : 0;
+                            let phiVanChuyen = (total > 0) ? 50000 : 0;
+
+                            document.getElementById("tongTienHang").innerText = total.toLocaleString('vi-VN') + "đ";
+                            document.getElementById("giamGia").innerText = giamGia.toLocaleString('vi-VN') + "đ";
+                            document.getElementById("phiVanChuyen").innerText = phiVanChuyen.toLocaleString('vi-VN') + "đ";
+                            document.getElementById("tongCong").innerText = (total - giamGia + phiVanChuyen).toLocaleString('vi-VN') + "đ";
+
+                            // Bật/tắt nút thanh toán
+                            document.getElementById("thanhToanBtn").disabled = checkboxes.length === 0;
+                        }
+
+                        // "Chọn tất cả"
+                        function toggleSelectAll(cb) {
+                            document.querySelectorAll('.checkProduct').forEach(item => {
+                                item.checked = cb.checked;
+                            });
+                            updateTotal();
+                        }
+
+                        // Reset khi load
+                        window.onload = function () {
+                            document.querySelectorAll('.checkProduct').forEach(item => item.checked = false);
+                            updateTotal();
+                        };
+
+                        // Trước khi mở modal, sinh ra hidden input cho sản phẩm đã tick
+                        document.getElementById('thanhToanBtn').addEventListener('click', function () {
+                            let checkboxes = document.querySelectorAll('.checkProduct:checked');
+                            let container = document.getElementById('selectedProductsContainer');
+                            container.innerHTML = ''; // Xóa hết cũ
+                            checkboxes.forEach(cb => {
+                                let pid = cb.getAttribute('data-productid');
+                                let color = cb.getAttribute('data-color');
+                                let quantity = cb.getAttribute('data-quantity');
+                                // Gửi dạng mảng về controller (ví dụ: selectedProducts[0], selectedProducts[1], ...)
+                                let input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'selectedProducts';
+                                input.value = pid + "___" + color + "___" + quantity;
+                                container.appendChild(input);
+                            });
+                        });
+
+                    </script>
+
+                    <script>
+                        fetch('/shopping', {
+                            method: 'POST',
+                            body: formData
+                        })
+                                .then(response => {
+                                    if (!response.ok)
+                                        throw new Error('Network response was not ok');
+                                    return response.json(); // vì giờ response thật sự là JSON
+                                })
+                                .then(data => {
+                                    if (data.code === "00") {
+                                        if (data.data) {
+                                            window.location.href = data.data; // Redirect to VNPAY
+                                        } else {
+                                            alert("Đặt hàng thành công!");
+                                            window.location.href = '/home'; // Redirect to home
+                                        }
+                                    } else {
+                                        alert("Lỗi: " + data.message);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert("Có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại.");
+                                });
 
 
-        </script>
+                    </script>
 
 
 
-        <script src="./myJs/userJs/shopping_cart.js"></script>
-        <script src="./myJs/userJs/vendor.min.js"></script>
-        <script src="./myJs/userJs/app.min.js"></script>
-    </body>
-</html>
+                    <script src="./myJs/userJs/shopping_cart.js"></script>
+                    <script src="./myJs/userJs/vendor.min.js"></script>
+                    <script src="./myJs/userJs/app.min.js"></script>
+                    </body>
+                    </html>

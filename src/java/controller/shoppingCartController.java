@@ -72,26 +72,51 @@ public class shoppingCartController extends HttpServlet {
 
         OrderDAO dao = new OrderDAO();
         int orderID = dao.findOrderIdNotConfirmed(acc.getUserID());
-
         if (orderID == 0) {
             orderID = dao.createNewOrder(acc.getUserID());
+        }
+
+        // Lấy danh sách productID đã tick
+        String[] selectedProducts = request.getParameterValues("selectedProducts");
+        if (selectedProducts == null || selectedProducts.length == 0) {
+            response.sendRedirect("shopping?notifyOrder=failed"); // hoặc báo lỗi chưa chọn sản phẩm
+            return;
+        }
+
+        // Lấy toàn bộ cart của user
+        List<gioHang> cart = dao.showShoppingCartByID(orderID);
+        // Tạo danh sách các sản phẩm được chọn
+        List<gioHang> selectedCart = new ArrayList<>();
+        for (String sp : selectedProducts) {
+            String[] info = sp.split("___"); // vd: "15___Đen"
+            int pid = Integer.parseInt(info[0]);
+            String color = info.length > 1 ? info[1] : "";
+
+            for (gioHang g : cart) {
+                if (g.getProductID() == pid && (color.isEmpty() || g.getColor().equals(color))) {
+                    selectedCart.add(g);
+                }
+            }
+        }
+
+        if (selectedCart.isEmpty()) {
+            response.sendRedirect("shopping?notifyOrder=failed");
+            return;
         }
 
         String nameOrder = request.getParameter("nameOrder");
         String phone = request.getParameter("phone");
         String deliveryLocation = request.getParameter("deliveryLocation");
         String paymentMethod = request.getParameter("paymentMethod");
-
-        List<gioHang> cart = dao.showShoppingCartByID(orderID);
-        double totalAmount = cart.stream().mapToDouble(g -> g.getTotalMoney()).sum();
+        double totalAmount = selectedCart.stream().mapToDouble(g -> g.getTotalMoney()).sum();
 
         dao.updateOrderConfirmedDB(orderID, nameOrder, phone, deliveryLocation, paymentMethod, totalAmount);
 
         if ("COD".equalsIgnoreCase(paymentMethod)) {
             dao.confirmOrder(orderID, "COD", "Paid");
-            sendOrderEmail(acc.getEmail(), nameOrder, phone, deliveryLocation, cart);
+            sendOrderEmail(acc.getEmail(), nameOrder, phone, deliveryLocation, selectedCart); // Gửi đúng selectedCart
             response.sendRedirect("shopping?notifyOrder=success");
-
+            
         } else if ("PAYOS".equalsIgnoreCase(paymentMethod)) {
             try {
                 String clientId = Config.CLIENT_ID;
